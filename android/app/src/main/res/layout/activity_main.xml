@@ -1,0 +1,56 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:orientation="vertical"
+    android:padding="24dp">
+
+    <TextView
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="GuardianLink"
+        android:textSize="30sp"
+        android:textStyle="bold"/>
+
+    <EditText
+        android:id="@+id/serverUrl"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Server URL"/>
+
+    <EditText
+        android:id="@+id/pairingId"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Pairing ID"/>
+
+    <EditText
+        android:id="@+id/deviceName"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:hint="Device name"/>
+
+    <Button
+        android:id="@+id/pairButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Pair Device"/>
+
+    <Button
+        android:id="@+id/heartbeatButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Send Heartbeat"/>
+
+    <Button
+        android:id="@+id/checkCommandButton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Check Commands"/>
+
+    <TextView
+        android:id="@+id/status"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Not paired"/>
+</LinearLayout>

@@ -1,0 +1,64 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <title>GuardianLink</title>
+  <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+<main>
+  <header>
+    <div>
+      <small>GUARDIANLINK</small>
+      <h1>My Devices</h1>
+      <p>Consent-based personal Android device management.</p>
+    </div>
+    <button id="pair">Create Pairing QR</button>
+  </header>
+
+  <section id="pairbox" hidden>
+    <h2>Pair a device</h2>
+    <img id="qr" width="220" alt="Pairing QR">
+    <code id="pid"></code>
+  </section>
+
+  <section class="grid">
+  {% for d in devices %}
+    <article>
+      <h3>{{ d["name"] }}</h3>
+      <p>{{ d["model"] or "Unknown model" }} · Android {{ d["android_version"] or "?" }}</p>
+      <p><b>Last seen</b><br>{{ d["last_seen"] or "Never" }}</p>
+      {% if d["latitude"] is not none %}
+      <a target="_blank" rel="noopener"
+         href="https://www.openstreetmap.org/?mlat={{ d['latitude'] }}&mlon={{ d['longitude'] }}">
+         View last shared location
+      </a>
+      {% else %}
+      <p>No location shared.</p>
+      {% endif %}
+      <br><br>
+      <button onclick="ring('{{ d['id'] }}')">Ring Device</button>
+    </article>
+  {% else %}
+    <article><h3>No devices paired yet</h3><p>Create a pairing QR.</p></article>
+  {% endfor %}
+  </section>
+</main>
+
+<script>
+document.getElementById("pair").onclick = async () => {
+  const r = await fetch("/api/pairing/create", {method: "POST"});
+  const j = await r.json();
+  document.getElementById("pairbox").hidden = false;
+  document.getElementById("qr").src = j.qr_url;
+  document.getElementById("pid").textContent = j.pairing_id;
+};
+
+async function ring(id) {
+  const r = await fetch(`/api/devices/${id}/commands/ring`, {method: "POST"});
+  alert(r.ok ? "Ring command queued." : "Could not queue command.");
+}
+</script>
+</body>
+</html>

@@ -1,0 +1,10 @@
+Repository Name: GuardianLink
+
+About:
+Privacy-first Android device management with QR pairing, multi-device monitoring, consent-based location sharing and remote ring.
+
+Topics:
+android, cybersecurity, fastapi, kotlin, device-management, qr-code, privacy, security, python, portfolio-project
+
+Suggested visibility:
+Public
