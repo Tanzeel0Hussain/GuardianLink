@@ -392,7 +392,7 @@ git --version
 Clone the repository:
 
 ```bash
-git clone https://github.com/YOUR_USERNAME/GuardianLink.git
+git clone https:/Tanzeel0Hussain/github.com//GuardianLink.git
 ```
 
 Replace:
