@@ -2,138 +2,231 @@
 
 ### Privacy-First Android Device Management Platform
 
-GuardianLink is an open-source Android device management and cybersecurity project designed to allow users to pair and manage **their own authorized Android devices** from a laptop through a web-based dashboard.
+GuardianLink is an open-source Android device management and cybersecurity project designed to securely connect and manage **your own authorized Android devices** from a laptop or desktop through a web-based dashboard.
 
-The project uses **QR-based pairing**, a **FastAPI backend**, an **SQLite database**, and an **Android Kotlin client** to establish a connection between the Android device and the laptop/server.
+GuardianLink uses:
 
-GuardianLink is designed for educational purposes, personal device management, cybersecurity learning, and portfolio demonstration.
+* 🐍 Python
+* ⚡ FastAPI
+* 🗄️ SQLite
+* 📱 Kotlin
+* 🤖 Android Studio
+* 🔗 QR-based pairing
+* 🔐 Device authentication tokens
+* 🌐 Web dashboard
+
+The project is designed for **cybersecurity learning, personal device management, academic demonstrations, research, and portfolio development**.
+
+> ⚠️ **Important:** GuardianLink must only be used with devices that you own or have explicit permission to manage. Android permissions remain under the control of the device owner and Android operating system.
+
+---
+
+# 📑 Table of Contents
+
+* [Project Overview](#-project-overview)
+* [How GuardianLink Works](#-how-guardianlink-works)
+* [Main Features](#-main-features)
+* [Technology Stack](#-technology-stack)
+* [Project Structure](#-project-structure)
+* [Requirements](#-requirements)
+* [Quick Installation](#-quick-installation)
+* [Complete Step-by-Step Installation](#-complete-step-by-step-installation)
+* [Starting the GuardianLink Server](#-starting-the-guardianlink-server)
+* [Opening the Dashboard](#-opening-the-dashboard)
+* [Connecting an Android Phone](#-connecting-an-android-phone)
+* [Generating a Pairing QR Code](#-generating-a-pairing-qr-code)
+* [Android Application Setup](#-android-application-setup)
+* [Pairing the Android Device](#-pairing-the-android-device)
+* [Testing Heartbeat](#-testing-heartbeat)
+* [Testing Remote Ring](#-testing-remote-ring)
+* [Location Sharing](#-location-sharing)
+* [Running GuardianLink Again](#-running-guardianlink-again)
+* [Stopping GuardianLink](#-stopping-guardianlink)
+* [Troubleshooting](#-troubleshooting)
+* [API Endpoints](#-api-endpoints)
+* [Security](#-security)
+* [Current Limitations](#-current-limitations)
+* [Future Roadmap](#-future-roadmap)
+* [License](#-license)
+* [Author](#-author)
 
 ---
 
 # 📌 Project Overview
 
-GuardianLink creates a client-server environment where:
+GuardianLink creates a secure client-server environment where an authorized Android phone communicates with a GuardianLink server running on a laptop or desktop.
 
 ```text
-Android Phone
-      │
-      │ Internet / Local Network
-      │
-      ▼
-GuardianLink FastAPI Server
-      │
-      ▼
-SQLite Database
-      │
-      ▼
-Web Dashboard
-      │
-      ▼
-Laptop / Desktop Browser
+┌───────────────────────┐
+│     Android Phone     │
+│ GuardianLink Android  │
+│        Client         │
+└───────────┬───────────┘
+            │
+            │ Wi-Fi / Local Network
+            │
+            ▼
+┌───────────────────────┐
+│   GuardianLink Server │
+│       FastAPI         │
+└───────────┬───────────┘
+            │
+            ├──────────────► SQLite Database
+            │
+            ▼
+┌───────────────────────┐
+│    Web Dashboard      │
+│ Laptop/Desktop Browser│
+└───────────────────────┘
 ```
 
-The laptop runs the GuardianLink server.
+The GuardianLink server handles:
 
-The Android device connects to that server after being paired.
+* Device pairing
+* Device registration
+* Authentication tokens
+* Device heartbeat
+* Last-seen information
+* Location updates
+* Remote command queue
+* Web dashboard
+* Multiple registered devices
 
-Once paired, every Android device receives its own:
+---
 
-- Device ID
-- Authentication Token
-- Device Name
-- Device Model
-- Android Version
-- Last Seen Information
+# 🔄 How GuardianLink Works
 
-This allows multiple Android devices to be connected to the same GuardianLink dashboard.
+GuardianLink follows this general workflow:
+
+```text
+1. User starts GuardianLink server
+        ↓
+2. User opens GuardianLink dashboard
+        ↓
+3. User creates a pairing session
+        ↓
+4. GuardianLink generates a QR code + Pairing ID
+        ↓
+5. Android device connects using server URL + Pairing ID
+        ↓
+6. Server verifies pairing session
+        ↓
+7. Server creates Device ID + Authentication Token
+        ↓
+8. Android client stores credentials
+        ↓
+9. Device can send heartbeat and request commands
+        ↓
+10. Device appears on GuardianLink dashboard
+```
 
 ---
 
 # ✨ Main Features
 
-GuardianLink currently provides the following features:
+## 📱 Multi-Device Management
 
-### 📱 Multi-Device Management
+GuardianLink supports multiple registered Android devices.
 
-Multiple Android devices can be registered with the same GuardianLink server.
-
-For example:
+Example:
 
 ```text
 GuardianLink Dashboard
-
-├── Pixel 7
+│
+├── Google Pixel
 ├── Samsung Galaxy
-├── OnePlus
-└── Another Android Device
+├── Xiaomi
+└── OnePlus
 ```
 
-Each device receives a unique Device ID and authentication token.
-
----
-
-### 📷 QR-Based Pairing
-
-The GuardianLink server can generate a temporary QR pairing session.
-
-The general pairing process is:
+Each device receives its own:
 
 ```text
-Laptop
-   │
-   │ Generate Pairing Session
-   ▼
-QR Code
-   │
-   │ Scan / enter pairing information
-   ▼
-Android GuardianLink Client
-   │
-   │ Register Device
-   ▼
-GuardianLink Server
-   │
-   ▼
-Unique Device ID + Token
-```
-
-Pairing sessions expire after a short period for security.
-
-> QR pairing is used only for establishing an authorized connection. Android permissions still remain under the control of the Android operating system and device owner.
-
----
-
-### 💓 Device Heartbeat
-
-A paired Android device can send heartbeat requests to GuardianLink.
-
-This allows the dashboard to maintain information such as:
-
-```text
+Device ID
+Device Authentication Token
 Device Name
 Device Model
 Android Version
 Last Seen
-Connection Status
-```
-
-For example:
-
-```text
-Pixel 7
-
-Model: Pixel 7
-Android: 16
-Last Seen: 2026-09-01 12:30
+Location
+Command Queue
 ```
 
 ---
 
-### 📍 Consent-Based Location Sharing
+## 📷 QR-Based Pairing
 
-GuardianLink contains an API endpoint for device location.
+GuardianLink generates a temporary pairing session containing:
 
-The Android application must receive location permission from the device owner before location information can be collected.
+```text
+Pairing ID
+QR Code
+Expiration Time
+```
+
+The pairing session automatically expires after a short period.
+
+The QR contains information similar to:
+
+```text
+guardianlink://pair?server=SERVER_URL&pairing_id=PAIRING_ID
+```
+
+### Current Android Client
+
+The current GuardianLink starter Android client uses the:
+
+```text
+Server URL
++
+Pairing ID
+```
+
+fields for pairing.
+
+The QR code is generated by the server and displayed on the dashboard, while the Pairing ID shown below it can currently be entered manually into the Android application.
+
+Direct in-app QR scanning can be added in a future version.
+
+---
+
+## 🔐 Device Authentication
+
+When a device successfully pairs, GuardianLink creates:
+
+```text
+Unique Device ID
++
+Random Authentication Token
+```
+
+Protected Android requests use:
+
+```text
+Authorization: Bearer DEVICE_TOKEN
+```
+
+This prevents an unregistered device from simply pretending to be an already paired GuardianLink device.
+
+---
+
+## 💓 Device Heartbeat
+
+A paired device can send a heartbeat to the server.
+
+GuardianLink then updates:
+
+```text
+Last Seen
+```
+
+This can be used to determine whether a device has recently communicated with the server.
+
+---
+
+## 📍 Consent-Based Location Storage
+
+GuardianLink provides a backend API for storing the last authorized device location.
 
 The server can store:
 
@@ -143,78 +236,43 @@ Longitude
 Last Update Time
 ```
 
-The dashboard can then provide a link to view the last shared location on a map.
+When location is available, the dashboard can provide a link to view it on a map.
+
+> Location must only be collected after the Android device owner provides the required Android permission.
 
 ---
 
-### 🔔 Remote Ring Command
+## 🔔 Remote Ring Command
 
-GuardianLink includes a safe remote command system.
+GuardianLink contains a basic remote command queue.
 
-The laptop can queue a:
-
-```text
-RING
-```
-
-command for a paired device.
-
-The Android client can periodically check the GuardianLink server for pending commands.
-
-The architecture is:
+From the dashboard, the user can queue:
 
 ```text
-Laptop Dashboard
-      │
-      │ Ring Device
-      ▼
-GuardianLink Server
-      │
-      │ Command Queue
-      ▼
-Android Client
-      │
-      ▼
-Ring Device
+ring
 ```
 
-This architecture can later be extended with other legitimate device-management functionality.
+for a registered device.
+
+The Android client can check the server for pending commands.
 
 ---
 
-# 🏗️ Project Architecture
+# 🧰 Technology Stack
 
-GuardianLink consists of three major components.
-
-## 1. GuardianLink Server
-
-Technology:
+## Backend
 
 ```text
-Python
+Python 3
 FastAPI
 Uvicorn
 SQLite
 Jinja2
+QRCode
+Pillow
 ```
 
-Responsibilities:
-
-- Generate pairing sessions
-- Generate QR codes
-- Register Android devices
-- Generate authentication tokens
-- Receive heartbeat requests
-- Receive authorized location updates
-- Maintain command queue
-- Display connected devices
-- Provide web dashboard
-
----
-
-## 2. Android Client
-
-Technology:
+## Android
 
 ```text
 Kotlin
@@ -223,54 +281,24 @@ OkHttp
 Android APIs
 ```
 
-Responsibilities:
-
-- Connect to GuardianLink server
-- Pair device
-- Store Device ID
-- Store Device Token
-- Send heartbeat
-- Send authorized device information
-- Check remote command queue
-
----
-
-## 3. Web Dashboard
-
-The dashboard is provided by the FastAPI server.
-
-It allows the user to see registered devices from a browser.
-
-Example:
+## Frontend
 
 ```text
-------------------------------------------------
-                 GuardianLink
-------------------------------------------------
+HTML
+CSS
+JavaScript
+Jinja2 Templates
+```
 
-My Devices
+## Database
 
-Pixel 7
-Android 16
-Last Seen: 12:30 PM
-
-[ View Location ]     [ Ring Device ]
-
-
-Samsung Galaxy
-Android 15
-Last Seen: 12:28 PM
-
-[ View Location ]     [ Ring Device ]
-
-------------------------------------------------
+```text
+SQLite
 ```
 
 ---
 
 # 📂 Project Structure
-
-After downloading or cloning GuardianLink, the project structure will look similar to:
 
 ```text
 GuardianLink/
@@ -279,10 +307,8 @@ GuardianLink/
 ├── LICENSE
 ├── SECURITY.md
 ├── CONTRIBUTING.md
-├── .gitignore
 │
 ├── server/
-│   │
 │   ├── app.py
 │   ├── requirements.txt
 │   ├── run.sh
@@ -294,9 +320,8 @@ GuardianLink/
 │       └── style.css
 │
 ├── android/
-│   │
-│   ├── settings.gradle.kts
 │   ├── build.gradle.kts
+│   ├── settings.gradle.kts
 │   │
 │   └── app/
 │       ├── build.gradle.kts
@@ -312,26 +337,17 @@ GuardianLink/
 │               │               └── MainActivity.kt
 │               │
 │               └── res/
-│                   ├── layout/
-│                   │   └── activity_main.xml
-│                   │
-│                   └── values/
-│                       └── styles.xml
 │
 └── docs/
-    ├── ARCHITECTURE.md
-    ├── API.md
-    ├── SECURITY.md
-    └── ROADMAP.md
 ```
 
 ---
 
-# ⚙️ Requirements
+# ✅ Requirements
 
-The GuardianLink server is primarily intended to run on Linux.
+GuardianLink server is recommended to run on Linux.
 
-Recommended environment:
+Test/development environments may include:
 
 ```text
 Ubuntu
@@ -340,38 +356,18 @@ Debian
 Linux Mint
 ```
 
-You will need:
+You need:
 
-```text
-Python 3
-Python venv
-pip
-Git
-Android Studio
-Android Phone
-```
-
----
-
-# 🚀 Complete Installation Guide
-
-The following instructions show how to run GuardianLink from the beginning.
-
----
-
-# Step 1 — Install Required Linux Packages
-
-First update your package information:
-
-```bash
-sudo apt update
-```
-
-Install Python, pip, virtual environment support, and Git:
-
-```bash
-sudo apt install python3 python3-pip python3-venv git -y
-```
+* Internet connection for initial installation
+* Linux laptop or desktop
+* Python 3
+* pip
+* Python virtual environment support
+* Git
+* Android Studio
+* Android phone
+* USB cable
+* Wi-Fi network
 
 Check Python:
 
@@ -387,37 +383,133 @@ git --version
 
 ---
 
-# Step 2 — Clone GuardianLink
+# ⚡ Quick Installation
 
-Clone the repository:
+For users who already have Python, Git, and `python3-venv` installed:
 
 ```bash
-git clone https:/Tanzeel0Hussain/github.com/GuardianLink.git
+git clone https://github.com/Tanzeel0Hussain/GuardianLink.git
+cd GuardianLink/server
+python3 -m venv .venv
+source .venv/bin/activate
+pip install --upgrade pip
+pip install -r requirements.txt
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Replace:
+Then open:
 
 ```text
-YOUR_USERNAME
+http://127.0.0.1:8000
 ```
 
-with your actual GitHub username.
+> For first-time users, follow the complete installation below.
 
-Then enter the project:
+---
+
+# 🚀 Complete Step-by-Step Installation
+
+Follow the commands **in exactly this order**.
+
+---
+
+# Step 1 — Open Terminal
+
+On Ubuntu or another supported Linux distribution, open Terminal.
+
+You can normally use:
+
+```text
+Ctrl + Alt + T
+```
+
+---
+
+# Step 2 — Update Linux Packages
+
+Run:
+
+```bash
+sudo apt update
+```
+
+Optional but recommended:
+
+```bash
+sudo apt upgrade -y
+```
+
+---
+
+# Step 3 — Install Required Packages
+
+Install Python, pip, virtual environment support, Git, and curl:
+
+```bash
+sudo apt install python3 python3-pip python3-venv git curl -y
+```
+
+---
+
+# Step 4 — Verify Python
+
+Run:
+
+```bash
+python3 --version
+```
+
+You should receive output similar to:
+
+```text
+Python 3.x.x
+```
+
+---
+
+# Step 5 — Verify Git
+
+Run:
+
+```bash
+git --version
+```
+
+Expected example:
+
+```text
+git version 2.x.x
+```
+
+---
+
+# Step 6 — Clone GuardianLink
+
+Run:
+
+```bash
+git clone https://github.com/Tanzeel0Hussain/GuardianLink.git
+```
+
+When cloning completes, enter the project:
 
 ```bash
 cd GuardianLink
 ```
 
-Check the files:
+Check repository contents:
 
 ```bash
 ls
 ```
 
-You should see folders such as:
+You should see files/folders similar to:
 
 ```text
+README.md
+LICENSE
+SECURITY.md
+CONTRIBUTING.md
 android
 docs
 server
@@ -425,7 +517,7 @@ server
 
 ---
 
-# Step 3 — Open Server Directory
+# Step 7 — Enter Server Folder
 
 Run:
 
@@ -433,7 +525,7 @@ Run:
 cd server
 ```
 
-Check the files:
+Check files:
 
 ```bash
 ls
@@ -445,45 +537,67 @@ You should see:
 app.py
 requirements.txt
 run.sh
-templates
 static
+templates
 ```
 
 ---
 
-# Step 4 — Create Python Virtual Environment
+# Step 8 — Create Python Virtual Environment
 
-Create a virtual environment:
+Run:
 
 ```bash
 python3 -m venv .venv
 ```
 
-Activate it:
+This creates an isolated Python environment for GuardianLink.
+
+---
+
+# Step 9 — Activate Virtual Environment
+
+Run:
 
 ```bash
 source .venv/bin/activate
 ```
 
-After activation, your terminal should show something similar to:
+Your terminal should now show something similar to:
 
 ```text
 (.venv) user@computer:~/GuardianLink/server$
 ```
 
-This means the Python virtual environment is active.
+The:
+
+```text
+(.venv)
+```
+
+means the virtual environment is active.
 
 ---
 
-# Step 5 — Install Python Dependencies
+# Step 10 — Upgrade pip
 
-Install all required packages:
+Run:
+
+```bash
+python -m pip install --upgrade pip
+```
+
+---
+
+# Step 11 — Install GuardianLink Dependencies
+
+Run:
 
 ```bash
 pip install -r requirements.txt
 ```
 
-This installs the GuardianLink server dependencies, including:
+GuardianLink currently installs packages including:
 
 ```text
 FastAPI
@@ -493,9 +607,11 @@ QRCode
 Pillow
 ```
 
+Wait until installation completes.
+
 ---
 
-# Step 6 — Start GuardianLink Server
+# Step 12 — Start GuardianLink Server
 
 Run:
 
@@ -503,91 +619,173 @@ Run:
 uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
-Alternatively:
+If successful, you should see output similar to:
 
-```bash
-./run.sh
+```text
+Uvicorn running on http://0.0.0.0:8000
 ```
 
-If `run.sh` does not have execute permission:
+Do **not** close this terminal while using GuardianLink.
+
+---
+
+# ▶️ Starting GuardianLink Server Using run.sh
+
+GuardianLink also includes:
+
+```text
+run.sh
+```
+
+Give the script execute permission:
 
 ```bash
 chmod +x run.sh
 ```
 
-Then:
+Then run:
 
 ```bash
 ./run.sh
 ```
 
+This starts GuardianLink on:
+
+```text
+0.0.0.0:8000
+```
+
 ---
 
-# Step 7 — Open GuardianLink Dashboard
+# 🌐 Opening the Dashboard
 
-On the same laptop, open a browser and visit:
+On the same laptop, open your browser.
+
+Go to:
 
 ```text
 http://127.0.0.1:8000
 ```
 
-You should now see the GuardianLink dashboard.
+You should see:
 
-The API documentation generated automatically by FastAPI is available at:
+```text
+GuardianLink
+
+My Devices
+
+[ Create Pairing QR ]
+```
+
+If no device has been paired yet, the dashboard will display:
+
+```text
+No devices paired yet
+```
+
+---
+
+# 📘 FastAPI API Documentation
+
+GuardianLink automatically provides interactive API documentation.
+
+Open:
 
 ```text
 http://127.0.0.1:8000/docs
 ```
 
-This page is useful during development because it allows the GuardianLink REST API to be tested directly.
+This opens FastAPI Swagger UI.
+
+You can use it during development to inspect and test GuardianLink endpoints.
 
 ---
 
 # 🌐 Connecting an Android Phone
 
-If the Android phone and laptop are on the same Wi-Fi network, the phone must use the laptop's local network IP instead of:
+The Android phone cannot use:
 
 ```text
 127.0.0.1
 ```
 
-Because `127.0.0.1` on Android refers to the Android phone itself.
+to connect to the GuardianLink server running on your laptop.
+
+On Android:
+
+```text
+127.0.0.1
+```
+
+means:
+
+```text
+the Android phone itself
+```
+
+Therefore, the phone must use the laptop's **local network IP address**.
 
 ---
 
-# Step 8 — Find Laptop IP Address
+# Step 13 — Connect Laptop and Phone to Same Network
 
-On Linux run:
+Make sure both devices are connected to the same:
+
+```text
+Wi-Fi Network
+```
+
+Example:
+
+```text
+Home Wi-Fi
+├── Laptop
+└── Android Phone
+```
+
+---
+
+# Step 14 — Find Laptop IP Address
+
+On the laptop, open another terminal.
+
+Run:
 
 ```bash
 hostname -I
 ```
 
-Example result:
+Example output:
 
 ```text
 192.168.1.10
 ```
 
-Your GuardianLink server would then be available on the local network at:
+Normally the first local IPv4 address is the address you need.
+
+For example:
+
+```text
+Laptop IP = 192.168.1.10
+```
+
+GuardianLink would then be available at:
 
 ```text
 http://192.168.1.10:8000
 ```
 
-The actual IP address will depend on your network.
+Your IP address will probably be different.
 
 ---
 
-# Step 9 — Test Server From Android
+# Step 15 — Test GuardianLink From Android Browser
 
-Make sure:
+Before opening the GuardianLink Android application, test the server connection.
 
-1. Laptop and phone are connected to the same Wi-Fi.
-2. GuardianLink server is running.
-3. Port `8000` is accessible.
+On the Android phone, open Chrome or another browser.
 
-Open the Android browser and enter:
+Enter:
 
 ```text
 http://YOUR_LAPTOP_IP:8000
@@ -599,87 +797,39 @@ Example:
 http://192.168.1.10:8000
 ```
 
-If the GuardianLink dashboard appears, communication between the phone and laptop is working.
+If the GuardianLink dashboard appears on the phone, the network connection is working.
 
 ---
 
-# 📱 Android Application Setup
+# 🔥 Ubuntu Firewall
 
-GuardianLink contains an Android Studio project inside:
+If GuardianLink works on the laptop but not on the Android phone, check the firewall.
 
-```text
-android/
+Check firewall status:
+
+```bash
+sudo ufw status
 ```
 
-Open Android Studio.
+If UFW is active and port `8000` is blocked, allow GuardianLink:
 
-Select:
-
-```text
-Open
+```bash
+sudo ufw allow 8000/tcp
 ```
 
-Then select:
+Check again:
 
-```text
-GuardianLink/android/
+```bash
+sudo ufw status
 ```
 
-Wait for Gradle synchronization to complete.
+> Only expose GuardianLink on networks you trust.
 
 ---
 
-# Step 10 — Connect Android Phone to Android Studio
+# 📷 Generating a Pairing QR Code
 
-On your Android phone enable:
-
-```text
-Settings
-→ About Phone
-→ Build Number
-```
-
-Tap Build Number multiple times until Developer Options are enabled.
-
-Then open:
-
-```text
-Settings
-→ Developer Options
-→ USB Debugging
-```
-
-Enable USB Debugging.
-
-Connect the phone to the laptop using USB.
-
-Android will display an authorization prompt.
-
-Approve the connection.
-
----
-
-# Step 11 — Run GuardianLink Android Client
-
-Inside Android Studio select your Android phone from the device list.
-
-Click:
-
-```text
-Run ▶
-```
-
-Android Studio will build and install the GuardianLink development application onto your authorized device.
-
----
-
-# 🔗 Device Pairing Process
-
-Once both the server and Android client are running:
-
-### On Laptop
-
-Open:
+Once the server is running, open:
 
 ```text
 http://127.0.0.1:8000
@@ -691,19 +841,265 @@ Click:
 Create Pairing QR
 ```
 
-GuardianLink will generate:
+GuardianLink creates a temporary pairing session.
 
-- Pairing ID
-- QR Code
-- Expiration time
+The dashboard will display:
+
+```text
+QR Code
+
+Pairing ID
+```
+
+The pairing session is valid for approximately:
+
+```text
+10 minutes
+```
+
+After expiration, generate a new pairing QR.
 
 ---
 
-### On Android
+# 🧪 Optional — Generate Pairing Session From Terminal
 
-The starter client currently supports entering the server/pairing information required by the pairing flow.
+GuardianLink can also create a pairing session directly using the API.
 
-Enter the GuardianLink server address.
+Run:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/pairing/create
+```
+
+Example response:
+
+```json
+{
+  "pairing_id": "example-pairing-id",
+  "expires_at": "2026-09-02T00:00:00+00:00",
+  "qr_url": "http://127.0.0.1:8000/api/pairing/example-pairing-id/qr"
+}
+```
+
+The actual values will be generated automatically.
+
+You can open the returned:
+
+```text
+qr_url
+```
+
+in a browser to view the QR code.
+
+---
+
+# 📱 Android Application Setup
+
+GuardianLink includes an Android Studio project inside:
+
+```text
+GuardianLink/android/
+```
+
+---
+
+# Step 16 — Install Android Studio
+
+Download and install Android Studio from the official Android developer website if it is not already installed.
+
+After installation, open Android Studio.
+
+---
+
+# Step 17 — Open GuardianLink Android Project
+
+From Android Studio select:
+
+```text
+Open
+```
+
+Navigate to:
+
+```text
+GuardianLink/android/
+```
+
+Select the:
+
+```text
+android
+```
+
+folder.
+
+Wait for:
+
+```text
+Gradle Sync
+```
+
+to finish.
+
+The first Gradle synchronization may require an internet connection.
+
+---
+
+# Step 18 — Enable Developer Options on Android
+
+On your Android phone open:
+
+```text
+Settings
+```
+
+Then find:
+
+```text
+About Phone
+```
+
+Locate:
+
+```text
+Build Number
+```
+
+Tap it repeatedly until Android displays a message similar to:
+
+```text
+You are now a developer
+```
+
+The exact location may vary between Android manufacturers.
+
+---
+
+# Step 19 — Enable USB Debugging
+
+Open:
+
+```text
+Settings
+→ Developer Options
+```
+
+Enable:
+
+```text
+USB Debugging
+```
+
+---
+
+# Step 20 — Connect Android Phone to Laptop
+
+Connect the Android phone using a USB cable.
+
+A prompt may appear on the Android device:
+
+```text
+Allow USB debugging?
+```
+
+Select:
+
+```text
+Allow
+```
+
+If available, you can also select:
+
+```text
+Always allow from this computer
+```
+
+only when the laptop is trusted.
+
+---
+
+# Step 21 — Select Android Device in Android Studio
+
+Inside Android Studio, locate the device selector.
+
+Select your connected Android phone.
+
+Example:
+
+```text
+Redmi 13C
+```
+
+or:
+
+```text
+Samsung Galaxy
+```
+
+or another connected device.
+
+---
+
+# Step 22 — Install GuardianLink Android Client
+
+Click:
+
+```text
+Run ▶
+```
+
+Android Studio will:
+
+```text
+Build GuardianLink
+        ↓
+Install Application
+        ↓
+Launch GuardianLink
+```
+
+on the connected Android phone.
+
+---
+
+# 🔗 Pairing the Android Device
+
+Before pairing, make sure:
+
+```text
+✓ GuardianLink server is running
+✓ Laptop and phone are on the same network
+✓ Android can open GuardianLink dashboard
+✓ A fresh pairing session has been created
+```
+
+---
+
+# Step 23 — Create Pairing Session on Laptop
+
+On the laptop open:
+
+```text
+http://127.0.0.1:8000
+```
+
+Click:
+
+```text
+Create Pairing QR
+```
+
+The dashboard displays a QR code and Pairing ID.
+
+---
+
+# Step 24 — Enter Server URL in Android App
+
+Inside GuardianLink Android client, enter:
+
+```text
+http://YOUR_LAPTOP_IP:8000
+```
 
 Example:
 
@@ -711,7 +1107,49 @@ Example:
 http://192.168.1.10:8000
 ```
 
-Then enter the pairing ID generated by the dashboard.
+Do **not** use:
+
+```text
+http://127.0.0.1:8000
+```
+
+inside the Android application.
+
+---
+
+# Step 25 — Enter Pairing ID
+
+Below the QR code, GuardianLink displays a Pairing ID.
+
+Copy or enter that Pairing ID into the Android application.
+
+Example conceptually:
+
+```text
+Server URL:
+http://192.168.1.10:8000
+
+Pairing ID:
+xxxxxxxxxxxxxxxx
+```
+
+---
+
+# Step 26 — Check Device Name
+
+GuardianLink automatically uses the Android device model as the default device name.
+
+You can keep or edit the displayed name.
+
+Example:
+
+```text
+Redmi 13C
+```
+
+---
+
+# Step 27 — Pair Device
 
 Press:
 
@@ -719,11 +1157,13 @@ Press:
 Pair Device
 ```
 
+The Android client sends a registration request to the GuardianLink server.
+
 ---
 
 # 🔐 What Happens During Pairing?
 
-The Android client sends information such as:
+The Android client sends information including:
 
 ```text
 Device Name
@@ -732,165 +1172,234 @@ Android Version
 Pairing ID
 ```
 
-The GuardianLink server verifies the pairing session.
-
-If valid, the server generates:
+GuardianLink checks:
 
 ```text
-Unique Device ID
+Does pairing session exist?
+        ↓
+Has it already been used?
+        ↓
+Has it expired?
+        ↓
+If valid → register device
+```
+
+GuardianLink then generates:
+
+```text
+Device ID
 +
-Random Device Authentication Token
+Device Authentication Token
 ```
 
-Example conceptually:
+The Android application stores:
 
 ```text
-Device ID:
-J5p9K2xQ
-
-Device Token:
-random-secure-token
+Server Address
+Device ID
+Authentication Token
 ```
 
-These credentials identify the paired device.
+locally in its application preferences.
+
+If successful, the app displays:
+
+```text
+Paired successfully
+```
 
 ---
 
-# 🔑 Device Authentication
+# Step 28 — Check Device on Dashboard
 
-After pairing, protected device requests use:
+Return to the laptop browser.
+
+Refresh:
 
 ```text
-Authorization: Bearer DEVICE_TOKEN
+http://127.0.0.1:8000
 ```
 
-This prevents a random device from simply pretending to be an already paired GuardianLink device.
+The paired device should now appear.
 
-The token should never be uploaded manually to GitHub or placed inside source code.
+Example:
+
+```text
+Redmi 13C
+
+Model: 23106RN0DA
+Android: 15
+Last Seen: ...
+```
 
 ---
 
 # 💓 Testing Heartbeat
 
-After pairing the Android device, use:
+The GuardianLink Android client contains a heartbeat function.
+
+After pairing:
 
 ```text
-Send Heartbeat
+Open GuardianLink App
+        ↓
+Press Send Heartbeat
 ```
 
-from the Android starter client.
-
-The Android device sends a request to:
+The application sends a request to:
 
 ```text
 POST /api/devices/{device_id}/heartbeat
 ```
 
-The GuardianLink server updates:
+using:
+
+```text
+Authorization: Bearer DEVICE_TOKEN
+```
+
+If successful, the application displays:
+
+```text
+Heartbeat sent
+```
+
+Refresh the GuardianLink dashboard.
+
+The:
 
 ```text
 Last Seen
 ```
 
-for that device.
-
-Refresh the dashboard to see the updated information.
+time should update.
 
 ---
 
 # 🔔 Testing Remote Ring
 
-From the GuardianLink dashboard click:
+GuardianLink currently provides a server-side remote command queue.
+
+On the GuardianLink dashboard, locate the paired device.
+
+Click:
 
 ```text
 Ring Device
 ```
 
-The server adds a command to the command queue:
+GuardianLink places:
 
 ```text
 ring
 ```
 
-The Android client can then check:
+into that device's command queue.
+
+You should see:
+
+```text
+Ring command queued.
+```
+
+---
+
+# Step 29 — Check Remote Command on Android
+
+Open the GuardianLink Android client.
+
+Press:
+
+```text
+Check Commands
+```
+
+The Android application requests:
 
 ```text
 GET /api/devices/{device_id}/commands/next
 ```
 
-In the current starter implementation, command checking is initiated through the Android client's **Check Commands** action.
+If a ring command is pending, the current starter application displays:
 
-A future version can replace this development approach with an appropriate Android background-delivery mechanism such as Firebase Cloud Messaging or carefully designed WorkManager tasks.
+```text
+Command: ring
+```
+
+If nothing is pending:
+
+```text
+No commands
+```
+
+> The current starter client retrieves and displays the command. Full physical ringing/audio execution can be expanded in future Android versions.
 
 ---
 
-# 📍 Location Architecture
+# 📍 Location Sharing
 
-GuardianLink also provides:
+GuardianLink backend includes:
 
 ```text
 POST /api/devices/{device_id}/location
 ```
 
-The endpoint accepts:
+Example request data:
 
 ```json
 {
-    "latitude": 33.6844,
-    "longitude": 73.0479
+  "latitude": 33.6844,
+  "longitude": 73.0479
 }
 ```
 
-However, Android location information must only be collected after the user explicitly grants Android location permission.
+The request must use the device authentication token.
 
-The backend endpoint is included in the project, while the Android starter client can be extended to implement the full runtime-permission and location-provider workflow.
+When location has been stored, GuardianLink can display:
+
+```text
+View last shared location
+```
+
+on the dashboard.
+
+The link opens the last stored location in:
+
+```text
+OpenStreetMap
+```
 
 ---
 
-# 📱 Multiple Device Support
+## ⚠️ Android Location Permission
 
-GuardianLink supports registering multiple devices.
+The GuardianLink backend supports storing location information.
 
-For example:
+However, an Android client must explicitly request and receive Android runtime location permission before collecting location data.
 
-```text
-Laptop
-  │
-  └── GuardianLink
-       │
-       ├── Device 1 — Pixel 7
-       │
-       ├── Device 2 — Samsung Galaxy
-       │
-       └── Device 3 — OnePlus
-```
-
-Each device has its own:
-
-```text
-Device ID
-Authentication Token
-Device Information
-Last Seen
-Location
-Command Queue
-```
-
-Therefore, multiple authorized phones can be managed independently.
+The device owner must remain in control of this permission.
 
 ---
 
-# 🗄️ Database
+# 🗄️ GuardianLink Database
 
-GuardianLink automatically creates an SQLite database:
+GuardianLink automatically creates:
 
 ```text
 guardianlink.db
 ```
 
-The database is created when the FastAPI server starts.
+inside:
 
-It contains tables for:
+```text
+GuardianLink/server/
+```
+
+when the server starts.
+
+No manual database setup is required.
+
+The SQLite database contains tables for:
 
 ```text
 pairing_sessions
@@ -898,31 +1407,65 @@ devices
 commands
 ```
 
-You do not need to manually create the database for the development version.
-
 ---
 
-# 🛑 Stopping GuardianLink
+# 🔐 Pairing Session Security
 
-To stop the FastAPI server press:
+Pairing sessions are temporary.
+
+Each session contains:
 
 ```text
-CTRL + C
+Unique Pairing ID
+Created Time
+Expiration Time
+Claimed Status
 ```
 
-To leave the Python virtual environment:
+A pairing session:
 
-```bash
-deactivate
+```text
+✓ Can only be used once
+✓ Expires automatically
+✓ Creates random device credentials
+```
+
+If an already-used pairing ID is submitted again, GuardianLink rejects it.
+
+If the pairing session expires, GuardianLink rejects it.
+
+Generate a new QR code to create another session.
+
+---
+
+# 🔑 Device Token Security
+
+Each registered device receives a randomly generated authentication token.
+
+Protected API requests require:
+
+```text
+Authorization: Bearer DEVICE_TOKEN
+```
+
+Never:
+
+```text
+Upload device tokens to GitHub
+Share device tokens publicly
+Hard-code real device tokens in source code
+Commit guardianlink.db containing private test data
 ```
 
 ---
 
-# ▶️ Running GuardianLink Again Later
+# ▶️ Running GuardianLink Again
 
-You do **not** need to reinstall everything every time.
+After the first installation, you **do not need to reinstall everything**.
 
-Open Terminal:
+Open Terminal.
+
+Go to GuardianLink:
 
 ```bash
 cd GuardianLink/server
@@ -940,6 +1483,12 @@ Start GuardianLink:
 uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
 
+Or:
+
+```bash
+./run.sh
+```
+
 Then open:
 
 ```text
@@ -948,302 +1497,149 @@ http://127.0.0.1:8000
 
 ---
 
-# 🧪 FastAPI API Documentation
+# 🔄 Updating GuardianLink
 
-FastAPI automatically provides Swagger API documentation.
+To download the newest version from GitHub:
 
-Start GuardianLink and open:
-
-```text
-http://127.0.0.1:8000/docs
-```
-
-You can inspect and test the API endpoints from this interface.
-
-Main endpoints include:
+Stop the server first using:
 
 ```text
-POST   /api/pairing/create
-
-GET    /api/pairing/{pairing_id}/qr
-
-POST   /api/pairing/{pairing_id}/claim
-
-POST   /api/devices/{device_id}/heartbeat
-
-POST   /api/devices/{device_id}/location
-
-POST   /api/devices/{device_id}/commands/ring
-
-GET    /api/devices/{device_id}/commands/next
-
-POST   /api/devices/{device_id}/commands/{command_id}/ack
+Ctrl + C
 ```
 
----
-
-# 🌍 Using GuardianLink Over the Internet
-
-The development server should **not** simply be exposed directly to the public internet.
-
-The command:
+Go to the repository:
 
 ```bash
-uvicorn app:app --host 0.0.0.0 --port 8000
+cd GuardianLink
 ```
 
-is suitable for local development and testing.
+Pull the latest changes:
 
-For a real internet deployment, GuardianLink should first implement:
+```bash
+git pull
+```
+
+Enter server:
+
+```bash
+cd server
+```
+
+Activate environment:
+
+```bash
+source .venv/bin/activate
+```
+
+Update dependencies:
+
+```bash
+pip install -r requirements.txt
+```
+
+Start GuardianLink:
+
+```bash
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+---
+
+# 🛑 Stopping GuardianLink
+
+In the terminal where Uvicorn is running, press:
 
 ```text
-HTTPS/TLS
-Dashboard Authentication
-Rate Limiting
-Secure Token Storage
-Audit Logging
-Database Hardening
-CSRF Protection
-Credential Rotation
-Production ASGI Deployment
+Ctrl + C
 ```
 
-A production architecture could look like:
+Then leave the virtual environment:
 
-```text
-Android
-   │
-   │ HTTPS
-   ▼
-Internet
-   │
-   ▼
-Reverse Proxy / TLS
-   │
-   ▼
-GuardianLink API
-   │
-   ├── Authentication
-   ├── Device Registry
-   ├── Command Service
-   └── Database
-```
-
-Do not expose the development server publicly before implementing these protections.
-
----
-
-# 🔒 Security Model
-
-GuardianLink follows a consent-based device-management model.
-
-Important principles:
-
-### 1. Device Authorization
-
-Only devices intentionally paired by the owner should be registered.
-
-### 2. Unique Tokens
-
-Every device receives its own authentication token.
-
-### 3. Temporary Pairing
-
-Pairing sessions expire.
-
-### 4. Permission Transparency
-
-Android permissions remain controlled by Android.
-
-### 5. No Hardcoded Secrets
-
-Passwords, API keys, device tokens, and private credentials should never be committed to GitHub.
-
-### 6. HTTPS for Production
-
-Production communication should always use HTTPS.
-
----
-
-# ⚠️ Important Security Boundaries
-
-GuardianLink is intended for:
-
-- Personal device management
-- Authorized Android devices
-- Cybersecurity education
-- Security engineering research
-- Portfolio demonstrations
-- Lab environments
-
-GuardianLink is **not designed to provide**:
-
-- Silent application installation
-- Hidden spyware behavior
-- Covert camera access
-- Covert microphone recording
-- Keylogging
-- Credential theft
-- WhatsApp message extraction
-- Android permission bypass
-- Unauthorized device access
-- Stealth persistence
-
-Any powerful device-management functionality should remain transparent and authorized by the device owner.
-
----
-
-# 🛡️ Recommended Production Improvements
-
-Before using GuardianLink outside a local lab environment, the following improvements are recommended:
-
-```text
-1. HTTPS/TLS
-2. User authentication
-3. Password hashing
-4. Secure session management
-5. PostgreSQL
-6. API rate limiting
-7. Device-token rotation
-8. Encrypted Android token storage
-9. Audit logs
-10. Firebase Cloud Messaging
-11. Android WorkManager
-12. WebSocket support
-13. Certificate pinning
-14. Signed Android releases
-15. Automated security testing
+```bash
+deactivate
 ```
 
 ---
 
-# 🗺️ Development Roadmap
+# 🧹 Completely Removing Local GuardianLink Installation
 
-## Phase 1 — Core Platform
+If you only want to remove the cloned project from your computer:
 
-- [x] FastAPI backend
-- [x] SQLite database
-- [x] QR generation
-- [x] Device registration
-- [x] Unique device tokens
-- [x] Multi-device dashboard
-- [x] Heartbeat endpoint
-- [x] Location API
-- [x] Remote Ring command
-- [x] Android Kotlin starter
+First move outside the project:
 
----
-
-## Phase 2 — Security
-
-- [ ] Dashboard authentication
-- [ ] HTTPS
-- [ ] Token encryption
-- [ ] Device-token rotation
-- [ ] Audit logs
-- [ ] Rate limiting
-- [ ] PostgreSQL migration
-
----
-
-## Phase 3 — Device Monitoring
-
-- [ ] Battery percentage
-- [ ] Charging status
-- [ ] Network information
-- [ ] Opt-in location history
-- [ ] Device online/offline status
-- [ ] Geofencing
-- [ ] Lost-mode message
-
----
-
-## Phase 4 — Real-Time Communication
-
-- [ ] Firebase Cloud Messaging
-- [ ] WebSockets
-- [ ] WorkManager integration
-- [ ] Real-time dashboard updates
-- [ ] Command delivery status
-
----
-
-## Phase 5 — Managed Device Edition
-
-For legitimate organization-owned or fully managed Android devices:
-
-- [ ] Android Enterprise research
-- [ ] Device Policy Controller
-- [ ] Managed-device enrollment
-- [ ] Security policy management
-- [ ] Compliant enterprise lock/wipe functionality
-
----
-
-# 🛠️ Technologies Used
-
-### Backend
-
-```text
-Python
-FastAPI
-Uvicorn
-SQLite
-Jinja2
+```bash
+cd ..
 ```
 
-### Android
+Then remove the directory:
 
-```text
-Kotlin
-Android Studio
-OkHttp
-Android SDK
+```bash
+rm -rf GuardianLink
 ```
 
-### Frontend
+> ⚠️ Be careful with `rm -rf`. Make sure you are deleting the correct directory.
 
-```text
-HTML
-CSS
-JavaScript
-Jinja2
+---
+
+# 🛠️ Troubleshooting
+
+## Problem 1 — `git: command not found`
+
+Install Git:
+
+```bash
+sudo apt update
+sudo apt install git -y
 ```
 
-### Security
+Then verify:
 
-```text
-Random Device Tokens
-Bearer Authentication
-Temporary Pairing Sessions
-Permission-Based Device Access
+```bash
+git --version
 ```
 
 ---
 
-# 🐛 Troubleshooting
-
-## `python3: command not found`
+## Problem 2 — `python3: command not found`
 
 Install Python:
 
 ```bash
-sudo apt install python3
+sudo apt update
+sudo apt install python3 -y
 ```
 
----
-
-## `No module named venv`
-
-Run:
+Check:
 
 ```bash
-sudo apt install python3-venv
+python3 --version
 ```
 
 ---
 
-## `uvicorn: command not found`
+## Problem 3 — Virtual Environment Error
+
+If this command fails:
+
+```bash
+python3 -m venv .venv
+```
+
+install:
+
+```bash
+sudo apt install python3-venv -y
+```
+
+Then retry:
+
+```bash
+python3 -m venv .venv
+```
+
+---
+
+## Problem 4 — `uvicorn: command not found`
 
 Make sure the virtual environment is active:
 
@@ -1251,49 +1647,31 @@ Make sure the virtual environment is active:
 source .venv/bin/activate
 ```
 
-Then:
+Then reinstall dependencies:
 
 ```bash
 pip install -r requirements.txt
 ```
 
----
-
-## Android Cannot Connect to Server
-
-Do not use:
-
-```text
-http://127.0.0.1:8000
-```
-
-from a physical Android phone.
-
-Find the laptop IP:
+Run again:
 
 ```bash
-hostname -I
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
 ```
-
-Then use something like:
-
-```text
-http://192.168.1.10:8000
-```
-
-Also make sure both devices are connected to the same network.
 
 ---
 
-## Port 8000 Already in Use
+## Problem 5 — Port 8000 Already in Use
 
-Check:
+Check port:
 
 ```bash
-sudo ss -ltnp | grep :8000
+sudo lsof -i :8000
 ```
 
-Or temporarily start GuardianLink on another port:
+If another unwanted development process is using the port, stop that process.
+
+Alternatively, you can temporarily run GuardianLink on another port:
 
 ```bash
 uvicorn app:app --host 0.0.0.0 --port 8080 --reload
@@ -1305,85 +1683,466 @@ Then open:
 http://127.0.0.1:8080
 ```
 
+Remember that the Android server URL must then also use:
+
+```text
+:8080
+```
+
+---
+
+## Problem 6 — Dashboard Works on Laptop but Not Phone
+
+First find the laptop IP:
+
+```bash
+hostname -I
+```
+
+Use that address on Android:
+
+```text
+http://YOUR_LAPTOP_IP:8000
+```
+
+Check:
+
+```text
+✓ Same Wi-Fi
+✓ Server running with --host 0.0.0.0
+✓ Correct laptop IP
+✓ Correct port
+✓ Firewall allows port 8000
+```
+
+Check firewall:
+
+```bash
+sudo ufw status
+```
+
+If required:
+
+```bash
+sudo ufw allow 8000/tcp
+```
+
+---
+
+## Problem 7 — Pairing Failed
+
+Generate a **new pairing QR**.
+
+Possible causes include:
+
+```text
+Pairing ID expired
+Pairing ID already used
+Wrong Pairing ID
+Wrong server URL
+Phone cannot reach laptop
+GuardianLink server stopped
+```
+
+Remember that a pairing session expires after approximately:
+
+```text
+10 minutes
+```
+
+---
+
+## Problem 8 — Android Shows Connection Error
+
+On the phone browser, test:
+
+```text
+http://YOUR_LAPTOP_IP:8000
+```
+
+If the dashboard does not load, the problem is network connectivity rather than Android pairing.
+
+---
+
+## Problem 9 — Android Studio Does Not Detect Phone
+
+Check:
+
+```text
+✓ USB cable supports data
+✓ Developer Options enabled
+✓ USB Debugging enabled
+✓ USB authorization accepted
+```
+
+Reconnect the phone if necessary.
+
+---
+
+## Problem 10 — Gradle Sync Fails
+
+Check internet connection.
+
+In Android Studio use:
+
+```text
+File
+→ Sync Project with Gradle Files
+```
+
+If Android Studio requests missing SDK components, install the requested SDK packages and sync again.
+
+---
+
+# 🔌 API Endpoints
+
+GuardianLink currently provides the following main API routes.
+
+| Method | Endpoint                                             | Purpose                   |
+| ------ | ---------------------------------------------------- | ------------------------- |
+| `GET`  | `/`                                                  | GuardianLink dashboard    |
+| `POST` | `/api/pairing/create`                                | Create pairing session    |
+| `GET`  | `/api/pairing/{pairing_id}/qr`                       | Generate pairing QR       |
+| `POST` | `/api/pairing/{pairing_id}/claim`                    | Register Android device   |
+| `POST` | `/api/devices/{device_id}/heartbeat`                 | Update device heartbeat   |
+| `POST` | `/api/devices/{device_id}/location`                  | Store authorized location |
+| `POST` | `/api/devices/{device_id}/commands/ring`             | Queue ring command        |
+| `GET`  | `/api/devices/{device_id}/commands/next`             | Retrieve pending command  |
+| `POST` | `/api/devices/{device_id}/commands/{command_id}/ack` | Acknowledge command       |
+
+Interactive API documentation:
+
+```text
+http://127.0.0.1:8000/docs
+```
+
+---
+
+# 🧪 Example API Pairing Test
+
+Create pairing session:
+
+```bash
+curl -X POST http://127.0.0.1:8000/api/pairing/create
+```
+
+The server returns a fresh:
+
+```text
+pairing_id
+expires_at
+qr_url
+```
+
+Do not reuse an expired or already-claimed pairing ID.
+
+---
+
+# 🔒 Security
+
+GuardianLink is designed around authorized and consent-based device management.
+
+Current security concepts include:
+
+* Temporary pairing sessions
+* One-time pairing
+* Random device IDs
+* Random authentication tokens
+* Bearer-token authentication
+* Per-device authentication
+* Explicit Android permission requirements
+* Local database storage
+* User-controlled device pairing
+
+For security-related information, see:
+
+```text
+SECURITY.md
+```
+
+---
+
+# ⚠️ Current Limitations
+
+GuardianLink is currently a development/educational project.
+
+The current version has several limitations that should be understood before production use.
+
+### QR Scanning
+
+The server generates a real pairing QR code, but the current Android starter client does not yet contain a built-in camera QR scanner.
+
+For now use:
+
+```text
+Server URL
++
+Pairing ID displayed below QR
+```
+
+to pair the Android client.
+
+### Remote Ring
+
+The server can queue a `ring` command and the Android client can retrieve it.
+
+The current starter Android client displays the command rather than implementing a complete background ringtone/alarm service.
+
+### Background Communication
+
+The current Android client performs actions when the user triggers them.
+
+A production version could use an appropriate mechanism such as:
+
+```text
+WorkManager
+Firebase Cloud Messaging
+Foreground Service
+```
+
+depending on the feature and Android requirements.
+
+### Location
+
+The backend location endpoint exists, but full Android runtime permission and device location-provider integration still needs to be completed in the Android client.
+
+### HTTPS
+
+Local development currently uses:
+
+```text
+HTTP
+```
+
+A production deployment should use:
+
+```text
+HTTPS
+```
+
+with proper TLS configuration.
+
+---
+
+# 🗺️ Future Roadmap
+
+Possible future GuardianLink improvements include:
+
+* [ ] Built-in Android QR scanner
+* [ ] Automatic QR deep-link pairing
+* [ ] Full Android runtime location permission flow
+* [ ] Background heartbeat
+* [ ] Real device ringing
+* [ ] Command acknowledgements
+* [ ] Push notification support
+* [ ] Firebase Cloud Messaging
+* [ ] WorkManager integration
+* [ ] Battery information
+* [ ] Device online/offline indicators
+* [ ] Improved authentication
+* [ ] HTTPS/TLS deployment
+* [ ] Dashboard login
+* [ ] Device removal/revocation
+* [ ] Token rotation
+* [ ] Better activity logging
+* [ ] Command history
+* [ ] Improved mobile dashboard
+* [ ] Docker deployment
+* [ ] Raspberry Pi deployment
+* [ ] Public documentation
+* [ ] Automated tests
+
+---
+
+# 💡 Recommended First-Time User Flow
+
+For a first-time user, the complete process is:
+
+```text
+1. Install required packages
+        ↓
+2. Clone GuardianLink
+        ↓
+3. Enter server directory
+        ↓
+4. Create Python virtual environment
+        ↓
+5. Activate virtual environment
+        ↓
+6. Install requirements
+        ↓
+7. Start GuardianLink server
+        ↓
+8. Open dashboard
+        ↓
+9. Find laptop IP
+        ↓
+10. Test server from Android browser
+        ↓
+11. Open Android project in Android Studio
+        ↓
+12. Install GuardianLink on phone
+        ↓
+13. Generate Pairing QR
+        ↓
+14. Enter server IP + Pairing ID
+        ↓
+15. Pair device
+        ↓
+16. Refresh dashboard
+        ↓
+17. Send heartbeat
+        ↓
+18. Test command queue
+```
+
+---
+
+# ⚡ Command Summary
+
+For experienced Linux users:
+
+```bash
+sudo apt update
+sudo apt install python3 python3-pip python3-venv git curl -y
+
+git clone https://github.com/Tanzeel0Hussain/GuardianLink.git
+cd GuardianLink/server
+
+python3 -m venv .venv
+source .venv/bin/activate
+
+python -m pip install --upgrade pip
+pip install -r requirements.txt
+
+uvicorn app:app --host 0.0.0.0 --port 8000 --reload
+```
+
+Then open:
+
+```text
+http://127.0.0.1:8000
+```
+
+Find laptop IP:
+
+```bash
+hostname -I
+```
+
+Android uses:
+
+```text
+http://YOUR_LAPTOP_IP:8000
+```
+
 ---
 
 # 🤝 Contributing
 
 Contributions are welcome.
 
-Useful contribution areas include:
+General workflow:
 
-- Authentication
-- Security improvements
-- Android UI
-- Dashboard UI
-- API testing
-- Automated tests
-- Documentation
-- Android Enterprise integration
-- Device telemetry
-- Audit logging
-- Accessibility
+```bash
+git clone https://github.com/Tanzeel0Hussain/GuardianLink.git
+cd GuardianLink
+```
 
-All contributions should preserve GuardianLink's transparent and consent-based security model.
+Create a new branch:
 
----
+```bash
+git checkout -b feature-name
+```
 
-# 📜 License
+Make your changes.
 
-GuardianLink is released under the **MIT License**.
+Then:
+
+```bash
+git add .
+git commit -m "Add feature"
+git push origin feature-name
+```
+
+Create a Pull Request on GitHub.
 
 See:
 
 ```text
-LICENSE
+CONTRIBUTING.md
 ```
 
-for details.
+for additional information.
 
 ---
 
 # ⚖️ Responsible Use
 
-GuardianLink must only be used with devices that you own or have explicit authorization to manage.
-
-The project is intended for:
+GuardianLink is intended for:
 
 ```text
-Education
-Research
-Personal Device Management
-Cybersecurity Learning
-Portfolio Development
-Authorized Testing
+✓ Personal devices
+✓ Authorized devices
+✓ Cybersecurity education
+✓ Software development
+✓ Academic demonstrations
+✓ Research
+✓ Portfolio projects
 ```
 
-The user is responsible for following applicable laws and platform policies.
+GuardianLink must not be used to access, track, monitor, or control devices without the device owner's knowledge and authorization.
 
 ---
 
-# 👨‍💻 Project Purpose
+# 📄 License
 
-GuardianLink demonstrates practical knowledge of:
+GuardianLink is distributed under the license provided in:
 
-- Android development
-- Python backend development
-- REST APIs
-- Client-server architecture
-- Authentication
-- Device registration
-- QR-based pairing
-- Database management
-- Cybersecurity principles
-- Secure software architecture
-- Multi-device management
+```text
+LICENSE
+```
 
-It can therefore be used as a cybersecurity/software engineering portfolio project while providing a foundation for further research into legitimate Android device-management technologies.
+Review the license before redistributing or modifying the project.
 
 ---
 
-## 🛡️ GuardianLink
+# 👨‍💻 Author
 
-**Connect. Monitor. Protect.**
+**Tanzeel Hussain**
 
-> A privacy-first approach to personal Android device management.
+GitHub:
+
+https://github.com/Tanzeel0Hussain
+
+GuardianLink Repository:
+
+https://github.com/Tanzeel0Hussain/GuardianLink
+
+---
+
+# ⭐ Support GuardianLink
+
+If you find GuardianLink useful:
+
+```text
+⭐ Star the repository
+🍴 Fork the project
+🐛 Report issues
+🔧 Contribute improvements
+```
+
+Repository:
+
+https://github.com/Tanzeel0Hussain/GuardianLink
+
+---
+
+<p align="center">
+  <b>🛡️ GuardianLink</b><br>
+  Privacy-First Android Device Management
+</p>
+
+<p align="center">
+  Built for cybersecurity learning, authorized device management, and research.
+</p>
